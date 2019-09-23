@@ -1,8 +1,9 @@
 package message
 
 const (
-	LoginMessgeType   = "LoginMes"
-	LoginResponseType = "LoginRes"
+	LoginMessgeType    = "LoginMes"
+	RegisterMessgeType = "Register"
+	LoginResponseType  = "LoginRes"
 )
 
 type Message struct {

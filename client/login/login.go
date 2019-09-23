@@ -20,8 +20,8 @@ func Login(uid int, pwd string) error {
 	var mes message.Message
 	mes.Type = message.LoginMessgeType
 	data := message.LoginMessage{
-		UserID:  100,
-		UserPwd: "200",
+		UserID:  uid,
+		UserPwd: pwd,
 	}
 	encodeDataByte, err := json.Marshal(data)
 	if err != nil {
@@ -52,6 +52,28 @@ func Login(uid int, pwd string) error {
 	if err != nil {
 		fmt.Println("write data failed err = ", err.Error())
 		return err
+	}
+	fmt.Println("等待响应")
+	res := &message.LoginResponse{}
+
+	var resBytes = make([]byte, 9000)
+	n, err = conn.Read(resBytes)
+	if err != nil {
+		fmt.Println("read 失败", err.Error())
+		return err
+	}
+	fmt.Println(string(resBytes))
+	err = json.Unmarshal(resBytes[:n], res)
+	if err != nil {
+		return err
+	}
+	fmt.Println(res.Code)
+	if res.Code == 200 {
+		fmt.Println("登录成功")
+		fmt.Println(res.Error)
+	} else {
+		fmt.Println("登录失败")
+		fmt.Println(res.Error)
 	}
 	return nil
 }
