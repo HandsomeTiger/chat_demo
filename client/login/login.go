@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/handsomeTiger/chat_demo/common/message"
 )
@@ -35,6 +36,7 @@ func Login(uid int, pwd string) error {
 	}
 	// int转 []byte
 	var pkgLen uint32 = uint32(len(encodeMes))
+	fmt.Println("len = ", pkgLen)
 	var lenByte [4]byte
 	binary.BigEndian.PutUint32(lenByte[0:4], pkgLen)
 	n, err := conn.Write(lenByte[0:4])
@@ -42,6 +44,14 @@ func Login(uid int, pwd string) error {
 		fmt.Println("write failed")
 		return err
 	}
-	fmt.Println("客户端发送长度成功 len  ")
+	fmt.Println("客户端发送长度成功 len ")
+	time.Sleep(1 * time.Second)
+	fmt.Println(string(encodeMes))
+	fmt.Println(mes)
+	_, err = conn.Write(encodeMes)
+	if err != nil {
+		fmt.Println("write data failed err = ", err.Error())
+		return err
+	}
 	return nil
 }

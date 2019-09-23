@@ -1,8 +1,12 @@
 package main
 
 import (
+	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"net"
+
+	"github.com/handsomeTiger/chat_demo/common/message"
 )
 
 func main() {
@@ -26,14 +30,39 @@ func main() {
 
 func process(conn net.Conn) {
 	defer conn.Close()
+	readPkg(conn)
+}
+
+func readPkg(conn net.Conn) (*message.LoginMessage, error) {
 	buf := make([]byte, 8096)
 	for {
-		n, err := conn.Read(buf[:4])
-		if n != 4 || err != nil {
+		_, err := conn.Read(buf[:4])
+		if err != nil {
 			fmt.Println(err.Error())
-			return
+			return nil, err
 		}
-		fmt.Println("读到buf =", buf[:4])
-		fmt.Println("读到buflen =", buf[:4])
+		var pkhLen uint32 = binary.BigEndian.Uint32(buf[0:4])
+		fmt.Printf("read len %d \n", pkhLen)
+
+		n, err := conn.Read(buf[:pkhLen])
+		fmt.Println("n=", n)
+		if n != int(pkhLen) || err != nil {
+			fmt.Printf("err :%v \n", err.Error())
+			return nil, err
+		}
+		fmt.Println(string(buf[:pkhLen]))
+		var req message.Message
+		if err := json.Unmarshal(buf[:pkhLen], &req); err != nil {
+			fmt.Printf("json unmarshal failed %v", err.Error())
+			return nil, err
+		}
+		fmt.Println(req.Data)
+		var data message.LoginMessage
+		if err := json.Unmarshal([]byte(req.Data), &data); err != nil {
+			fmt.Println("err = ", err.Error())
+		}
+
+		return &data, nil
+
 	}
 }
